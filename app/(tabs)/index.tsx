@@ -1,12 +1,12 @@
-import { Text, View } from 'react-native'
+import Button from '@/components/Button'
+import { Text } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function HomeScreen() {
   return (
     <SafeAreaView>
-      <View>
-        <Text>테스트</Text>
-      </View>
+      <Text>테스트</Text>
+      <Button label="버튼" />
     </SafeAreaView>
   )
 }
