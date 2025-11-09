@@ -1,27 +1,28 @@
+import { BUTTON_SIZES, BUTTON_VARIANTS } from '@/constants/buttonStyles'
 import React from 'react'
 import { Pressable, PressableProps, Text } from 'react-native'
 
 interface ButtonProps extends PressableProps {
   label: string
-  size?: 'md' | 'lg'
-  variant?: 'primary'
+  size?: keyof typeof BUTTON_SIZES
+  variant?: keyof typeof BUTTON_VARIANTS
 }
 
 export default function Button({ label, size = 'lg', variant = 'primary', ...props }: ButtonProps) {
-  const sizeClass = size === 'lg' ? 'w-full h-11' : 'px-4 py-2'
-  const variantClass = variant === 'primary' ? 'bg-[#b0a0e3]' : ''
+  const sizeStyle = BUTTON_SIZES[size]
+  const variantStyle = BUTTON_VARIANTS[variant]
 
   return (
     <Pressable
       {...props}
       className={`
-        rounded-lg justify-center items-center 
-        ${sizeClass} 
-        ${variantClass}
+        w-full rounded-lg justify-center items-center 
+        ${sizeStyle.container} 
+        ${variantStyle.container}
         active:opacity-80
       `}
     >
-      <Text className="text-[#eeeeee] text-[16px] font-semibold">{label}</Text>
+      <Text className={`font-semibold ${variantStyle.text} ${sizeStyle.text}`}>{label}</Text>
     </Pressable>
   )
 }
