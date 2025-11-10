@@ -1,20 +1,39 @@
 import Button from '@/components/common/Button'
-import Input from '@/components/common/Input'
+import EmailInput from '@/components/EmailInput'
+import PasswordInput from '@/components/PasswordInput'
+import { FormProvider, useForm } from 'react-hook-form'
 import { StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+type LoginFormValues = {
+  email: string
+  password: string
+}
+
 export default function LoginScreen() {
+  const loginForm = useForm<LoginFormValues>({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  const onSubmit = (loginFormValues: LoginFormValues) => {
+    console.log('loginFormValues', loginFormValues)
+  }
+
   const inset = useSafeAreaInsets()
+
   return (
-    <>
+    <FormProvider {...loginForm}>
       <View style={styles.container}>
-        <Input label="이메일" placeholder="이메일을 입력해주세요." />
-        <Input label="비밀번호" placeholder="비밀번호를 입력해주세요." />
+        <EmailInput />
+        <PasswordInput />
       </View>
       <View style={[styles.fixed, { paddingBottom: inset.bottom || 12 }]}>
-        <Button label="로그인하기" variant="primary" />
+        <Button label="로그인하기" variant="primary" onPress={loginForm.handleSubmit(onSubmit)} />
       </View>
-    </>
+    </FormProvider>
   )
 }
 
