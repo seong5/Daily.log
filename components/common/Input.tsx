@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 8,
     paddingHorizontal: 10,
+    flexDirection: 'row',
   },
   label: {
     fontSize: 12,
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   primary: {
-    backgroundColor: colors.GRAY_200,
+    backgroundColor: colors.GRAY_100,
   },
   second: {
     borderWidth: 2,
