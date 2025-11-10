@@ -1,11 +1,11 @@
+import FeedList from '@/components/FeedList'
 import React from 'react'
-import { Text } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function HomeScreen() {
   return (
     <SafeAreaView>
-      <Text>홈화면</Text>
+      <FeedList />
     </SafeAreaView>
   )
 }
