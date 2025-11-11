@@ -1,6 +1,7 @@
 import Button from '@/components/common/Button'
 import DescriptionText from '@/components/DescriptionText'
 import ImageUpload from '@/components/ImageUpload'
+import PreviewImages from '@/components/PreviewImages'
 import TitleText from '@/components/TitleText'
 import { supabase } from '@/libs/supabase'
 import { router } from 'expo-router'
@@ -60,7 +61,10 @@ export default function PostFeedScreen() {
           name="imageUrl"
           control={postForm.control}
           render={({ field: { value, onChange } }) => (
-            <ImageUpload value={value} onChange={onChange} />
+            <>
+              <ImageUpload value={value} onChange={onChange} />
+              <PreviewImages url={value} />
+            </>
           )}
         />
         <Button label="게시하기" onPress={postForm.handleSubmit(onSubmit)} />
