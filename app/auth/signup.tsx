@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type SignupFormValues = {
   email: string
+  nickname: string
   password: string
   passwordConfirm: string
 }
@@ -17,6 +18,7 @@ export default function SignupScreen() {
   const signupForm = useForm<SignupFormValues>({
     defaultValues: {
       email: '',
+      nickname: '',
       password: '',
       passwordConfirm: '',
     },
