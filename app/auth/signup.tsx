@@ -3,8 +3,10 @@ import EmailInput from '@/components/EmailInput'
 import NicknameInput from '@/components/NicknameInput'
 import PasswordConfirmInput from '@/components/PasswordConfirmInput'
 import PasswordInput from '@/components/PasswordInput'
+import { supabase } from '@/libs/supabase'
+import { useNavigation } from '@react-navigation/native'
 import { FormProvider, useForm } from 'react-hook-form'
-import { StyleSheet, View } from 'react-native'
+import { Alert, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type SignupFormValues = {
@@ -15,6 +17,7 @@ type SignupFormValues = {
 }
 
 export default function SignupScreen() {
+  const navigation: any = useNavigation()
   const signupForm = useForm<SignupFormValues>({
     defaultValues: {
       email: '',
@@ -22,10 +25,35 @@ export default function SignupScreen() {
       password: '',
       passwordConfirm: '',
     },
+    mode: 'onChange',
   })
 
-  const onSubmit = (signupFormValues: SignupFormValues) => {
-    console.log('signupFormValues', signupFormValues)
+  const onSubmit = async (values: SignupFormValues) => {
+    const { email, nickname, password } = values
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { nickname },
+      },
+    })
+
+    if (error) {
+      console.log('회원가입 실패:', error)
+      Alert.alert('회원가입 실패', error.message ?? '다시 시도해주세요.')
+      return
+    }
+    console.log('회원가입 성공', data)
+    Alert.alert('회원가입에 성공했습니다.', '로그인 페이지로 이동합니다.', [
+      {
+        text: '확인',
+        onPress: () => {
+          navigation.navigate('login')
+        },
+      },
+    ])
+
+    signupForm.reset()
   }
 
   const inset = useSafeAreaInsets()
