@@ -2,6 +2,7 @@ import Button from '@/components/common/Button'
 import DescriptionText from '@/components/DescriptionText'
 import TitleText from '@/components/TitleText'
 import { supabase } from '@/libs/supabase'
+import { router } from 'expo-router'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Alert, StyleSheet, View } from 'react-native'
 
@@ -44,6 +45,7 @@ export default function PostFeed() {
     Alert.alert('게시물 등록 성공')
 
     postForm.reset()
+    router.push('/')
   }
 
   return (

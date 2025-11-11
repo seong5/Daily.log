@@ -9,16 +9,8 @@ const isInfiniteData = (data: unknown): data is { pages: FeedPost[][] } => {
 }
 
 export default function FeedList() {
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-  } = useFeedListQuery({ mode: 'infinite' })
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
+    useFeedListQuery({ mode: 'infinite' })
 
   const posts = isInfiniteData(data) ? data.pages.flat() : ((data as FeedPost[]) ?? [])
 
