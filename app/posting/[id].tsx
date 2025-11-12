@@ -1,3 +1,4 @@
+import CommentCard from '@/components/CommentCard'
 import FeedCard from '@/components/FeedCard'
 import { colors } from '@/constants/colors'
 import { supabase } from '@/libs/supabase'
@@ -20,7 +21,6 @@ export default function FeedDetailScreen() {
     setError(null)
     setLoading(true)
 
-    // 1) 게시글 단건 조회 (snake_case → camelCase 매핑)
     const { data: post, error: postErr } = await supabase
       .from(TABLE)
       .select('id, title, description, user_id, created_at, image_url')
@@ -34,8 +34,6 @@ export default function FeedDetailScreen() {
       return
     }
 
-    // 2) 작성자 프로필 조회 (테이블/컬럼명은 프로젝트에 맞게)
-    //    profiles 테이블이 있고, id=users.id 로 저장된다고 가정
     let author: FeedPost['author'] | undefined = undefined
     if (post?.user_id) {
       const { data: profile } = await supabase
@@ -103,6 +101,7 @@ export default function FeedDetailScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <FeedCard feed={data} isDetail />
+      <CommentCard />
     </ScrollView>
   )
 }
