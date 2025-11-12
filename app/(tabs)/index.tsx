@@ -3,7 +3,7 @@ import FeedList from '@/components/FeedList'
 import { useAuthQuery } from '@/hooks/useAuthQuery'
 import { useLogout } from '@/hooks/useLogout'
 import { router } from 'expo-router'
-import React from 'react'
+import React, { useCallback } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -11,6 +11,14 @@ export default function HomeScreen() {
   const { confirmLogout, isPending } = useLogout()
   const { data: session } = useAuthQuery()
   const isLoggedIn = Boolean(session)
+
+  const handlePressPost = useCallback(() => {
+    if (!isLoggedIn) {
+      router.push('/auth/login')
+      return
+    }
+    router.push('/posting/PostFeed')
+  }, [isLoggedIn])
 
   return (
     <SafeAreaView>
@@ -21,7 +29,7 @@ export default function HomeScreen() {
         {isLoggedIn ? (
           <Button label="로그아웃" size="md" onPress={confirmLogout} disabled={isPending} />
         ) : null}
-        <Button label="글쓰기" size="md" onPress={() => router.push('/posting/PostFeed')} />
+        <Button label="글쓰기" size="md" onPress={handlePressPost} />
       </View>
       <FeedList />
     </SafeAreaView>
