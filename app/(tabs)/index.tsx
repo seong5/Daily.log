@@ -21,7 +21,7 @@ export default function HomeScreen() {
   }, [isLoggedIn])
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {!isLoggedIn ? (
           <Button label="로그인/회원가입" size="md" onPress={() => router.push('/auth')} />
@@ -29,16 +29,27 @@ export default function HomeScreen() {
         {isLoggedIn ? (
           <Button label="로그아웃" size="md" onPress={confirmLogout} disabled={isPending} />
         ) : null}
-        <Button label="글쓰기" size="md" onPress={handlePressPost} />
       </View>
       <FeedList />
+      <View style={[styles.fixedButtonContainer, { bottom: 10 }]}>
+        <Button label="글쓰기" size="lg" onPress={handlePressPost} />
+      </View>
     </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: 'row-reverse',
+    marginRight: 16,
+  },
+  fixedButtonContainer: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    zIndex: 1000,
   },
 })
