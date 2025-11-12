@@ -104,7 +104,7 @@ export default function FeedCard({ feed, isDetail = false }: FeedCardProps) {
         </Pressable>
         <Pressable style={styles.menu}>
           <MaterialCommunityIcons name="message-reply-outline" size={22} color="black" />
-          <Text style={styles.menuNumber}>2</Text>
+          <Text style={styles.menuNumber}>{feed.commentCount ?? 0}</Text>
         </Pressable>
         <Pressable style={styles.menu}>
           <Octicons name="share" size={22} color="black" />

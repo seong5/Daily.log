@@ -83,6 +83,17 @@ export default function FeedDetailScreen() {
       }
     }
 
+    // 댓글 개수 가져오기
+    const { count: commentCount, error: commentCountError } = await supabase
+      .from('comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('post_id', postId)
+      .eq('is_deleted', false)
+
+    if (commentCountError) {
+      console.error('Error fetching comment count:', commentCountError)
+    }
+
     const mapped: FeedPost = {
       id: String(post.id),
       title: post.title ?? '',
@@ -95,6 +106,7 @@ export default function FeedDetailScreen() {
         nickname: '알 수 없음',
         imageUri: undefined,
       },
+      commentCount: commentCount ?? 0,
     }
 
     setData(mapped)
@@ -142,10 +154,12 @@ export default function FeedDetailScreen() {
         onSuccess: () => {
           setCommentContent('')
           refetchComments()
+          // 댓글 개수 업데이트를 위해 상세 정보 다시 가져오기
+          fetchDetail()
         },
       }
     )
-  }, [commentContent, createComment, postId, refetchComments, isLoggedIn, router])
+  }, [commentContent, createComment, postId, refetchComments, isLoggedIn, router, fetchDetail])
 
   if (loading) {
     return (

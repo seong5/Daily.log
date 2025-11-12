@@ -18,26 +18,64 @@ type PostRow = {
   image_url: string | null
 }
 
-const mapRowsToFeedPosts = (rows: PostRow[]): FeedPost[] =>
-  rows.map((row) => ({
-    id: row.id,
-    userId: row.user_id,
-    title: row.title,
-    description: row.description,
-    createdAt: row.created_at,
-    author: {
-      id: row.user_id,
-      nickname: '익명',
-      imageUri: '',
-    },
-    imageUris: row.image_url
-      ? [
-          {
-            uri: row.image_url,
+const mapRowsToFeedPosts = async (rows: PostRow[]): Promise<FeedPost[]> => {
+  const postsWithCommentCount = await Promise.all(
+    rows.map(async (row) => {
+      const { count, error } = await supabase
+        .from('comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('post_id', row.id)
+        .eq('is_deleted', false)
+
+      if (error) {
+        console.error('Error fetching comment count:', error)
+        return {
+          id: row.id,
+          userId: row.user_id,
+          title: row.title,
+          description: row.description,
+          createdAt: row.created_at,
+          author: {
+            id: row.user_id,
+            nickname: '익명',
+            imageUri: '',
           },
-        ]
-      : [],
-  }))
+          imageUris: row.image_url
+            ? [
+                {
+                  uri: row.image_url,
+                },
+              ]
+            : [],
+          commentCount: 0,
+        }
+      }
+
+      return {
+        id: row.id,
+        userId: row.user_id,
+        title: row.title,
+        description: row.description,
+        createdAt: row.created_at,
+        author: {
+          id: row.user_id,
+          nickname: '익명',
+          imageUri: '',
+        },
+        imageUris: row.image_url
+          ? [
+              {
+                uri: row.image_url,
+              },
+            ]
+          : [],
+        commentCount: count ?? 0,
+      }
+    })
+  )
+
+  return postsWithCommentCount
+}
 
 type Mode = 'single' | 'infinite'
 
@@ -62,7 +100,7 @@ export function useFeedListQuery(options?: {
 
       if (error) throw error
       const rows = data as PostRow[]
-      return mapRowsToFeedPosts(rows)
+      return await mapRowsToFeedPosts(rows)
     },
   })
   /* 무한스크롤 */
@@ -82,7 +120,7 @@ export function useFeedListQuery(options?: {
 
       if (error) throw error
       const rows = data as PostRow[]
-      return mapRowsToFeedPosts(rows)
+      return await mapRowsToFeedPosts(rows)
     },
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length < PAGE_SIZE ? undefined : allPages.length,

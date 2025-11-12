@@ -49,6 +49,7 @@ interface FeedPost {
   createdAt: string
   author: User
   imageUris: ImageUri[]
+  commentCount?: number
 }
 
 export type { Comment, CreateCommentDto, CreatePostDto, FeedPost, ImageUri, Profile }
