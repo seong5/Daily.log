@@ -3,6 +3,7 @@ import type { FeedPost } from '@/types'
 import React from 'react'
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native'
 import FeedCard from './FeedCard'
+import FeedCardSkeleton from './FeedCardSkeleton'
 
 const isInfiniteData = (data: unknown): data is { pages: FeedPost[][] } => {
   return !!(data && typeof data === 'object' && 'pages' in data)
@@ -16,8 +17,10 @@ export default function FeedList() {
 
   if (isLoading && posts.length === 0) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
+      <View style={styles.contentContainer}>
+        {[...Array(3)].map((_, index) => (
+          <FeedCardSkeleton key={index} />
+        ))}
       </View>
     )
   }

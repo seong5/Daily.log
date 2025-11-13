@@ -1,12 +1,15 @@
 import CommentCard from '@/components/CommentCard'
 import Button from '@/components/common/Button'
 import FeedCard from '@/components/FeedCard'
+import FeedCardSkeleton from '@/components/FeedCardSkeleton'
 import { colors } from '@/constants/colors'
+import { useAuthQuery } from '@/hooks/useAuthQuery'
 import { useCommentListQuery } from '@/hooks/useCommentListQuery'
 import { useCreateCommentMutation } from '@/hooks/useCreateCommentMutation'
+import { useToggleLikeMutation } from '@/hooks/useToggleLikeMutation'
 import { supabase } from '@/libs/supabase'
 import type { FeedPost } from '@/types'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
@@ -22,6 +25,7 @@ import {
 const TABLE = 'post'
 
 export default function FeedDetailScreen() {
+  const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const [data, setData] = useState<FeedPost | null>(null)
   const [loading, setLoading] = useState(true)
@@ -29,6 +33,9 @@ export default function FeedDetailScreen() {
   const [error, setError] = useState<string | null>(null)
   const postId = typeof id === 'string' ? id : null
   const [commentContent, setCommentContent] = useState('')
+
+  const { data: session } = useAuthQuery()
+  const isLoggedIn = Boolean(session)
 
   const {
     data: comments = [],
@@ -39,10 +46,36 @@ export default function FeedDetailScreen() {
   } = useCommentListQuery({ postId, mode: 'tree' })
   const isCommentsLoading = commentsLoading || commentsFetching
   const { mutate: createComment, isPending: isCreatingComment } = useCreateCommentMutation()
+  const { mutate: toggleLike } = useToggleLikeMutation()
   const isSubmitDisabled = useMemo(
-    () => isCreatingComment || !commentContent.trim(),
-    [isCreatingComment, commentContent]
+    () => isCreatingComment || !commentContent.trim() || !isLoggedIn,
+    [isCreatingComment, commentContent, isLoggedIn]
   )
+
+  const handleLikePress = useCallback(() => {
+    if (!data || !postId) return
+    if (!isLoggedIn) {
+      Alert.alert('로그인이 필요합니다.', '좋아요를 누르려면 로그인이 필요합니다.')
+      return
+    }
+
+    const currentIsLiked = data.isLiked ?? false
+    toggleLike(
+      { postId, isLiked: currentIsLiked },
+      {
+        onSuccess: () => {
+          setData((prev) => {
+            if (!prev) return prev
+            return {
+              ...prev,
+              isLiked: !currentIsLiked,
+              likeCount: (prev.likeCount ?? 0) + (currentIsLiked ? -1 : 1),
+            }
+          })
+        },
+      }
+    )
+  }, [data, postId, isLoggedIn, toggleLike])
 
   const fetchDetail = useCallback(async () => {
     if (!postId) return
@@ -78,23 +111,68 @@ export default function FeedDetailScreen() {
       }
     }
 
+    const { count: commentCount, error: commentCountError } = await supabase
+      .from('comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('post_id', postId)
+      .eq('is_deleted', false)
+
+    if (commentCountError) {
+      console.error('Error fetching comment count:', commentCountError)
+    }
+
+    const { count: likeCount, error: likeError } = await supabase
+      .from('likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('post_id', postId)
+
+    if (likeError) {
+      console.error('Error fetching like count:', likeError)
+    }
+
+    let isLiked = false
+    if (session?.user?.id) {
+      const { data: likeData } = await supabase
+        .from('likes')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', session.user.id)
+        .maybeSingle()
+
+      isLiked = !!likeData
+    }
+
+    let imageUris: { uri: string }[] = []
+    if (post.image_url) {
+      try {
+        const parsed = JSON.parse(post.image_url)
+        const urls = Array.isArray(parsed) ? parsed : [post.image_url]
+        imageUris = urls.map((uri: string) => ({ uri }))
+      } catch {
+        imageUris = [{ uri: post.image_url }]
+      }
+    }
+
     const mapped: FeedPost = {
       id: String(post.id),
       title: post.title ?? '',
       description: post.description ?? '',
       userId: String(post.user_id),
       createdAt: post.created_at,
-      imageUris: post.image_url ? [{ uri: post.image_url }] : [],
+      imageUris,
       author: author ?? {
         id: String(post.user_id),
         nickname: '알 수 없음',
         imageUri: undefined,
       },
+      commentCount: commentCount ?? 0,
+      likeCount: likeCount ?? 0,
+      isLiked,
     }
 
     setData(mapped)
     setLoading(false)
-  }, [postId])
+  }, [postId, session?.user?.id])
 
   useEffect(() => {
     if (!postId) return
@@ -111,6 +189,20 @@ export default function FeedDetailScreen() {
   const handleSubmitComment = useCallback(() => {
     if (!postId) return
 
+    if (!isLoggedIn) {
+      Alert.alert('로그인이 필요합니다.', '댓글을 작성하려면 로그인이 필요합니다.', [
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+        {
+          text: '로그인',
+          onPress: () => router.push('/auth/login'),
+        },
+      ])
+      return
+    }
+
     const trimmed = commentContent.trim()
     if (!trimmed) {
       Alert.alert('알림', '댓글 내용을 입력해주세요.')
@@ -123,16 +215,17 @@ export default function FeedDetailScreen() {
         onSuccess: () => {
           setCommentContent('')
           refetchComments()
+          fetchDetail()
         },
       }
     )
-  }, [commentContent, createComment, postId, refetchComments])
+  }, [commentContent, createComment, postId, refetchComments, isLoggedIn, router, fetchDetail])
 
   if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator />
-      </View>
+      <ScrollView contentContainerStyle={{ padding: 12, backgroundColor: colors.GRAY_100 }}>
+        <FeedCardSkeleton />
+      </ScrollView>
     )
   }
 
@@ -150,18 +243,32 @@ export default function FeedDetailScreen() {
       contentContainerStyle={{ padding: 12, backgroundColor: colors.GRAY_100 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <FeedCard feed={data} isDetail />
+      <FeedCard feed={data} isDetail onLikePress={handleLikePress} />
       <View style={styles.commentSection}>
         <Text style={styles.commentTitle}>댓글</Text>
         <View style={styles.commentInputContainer}>
           <TextInput
             value={commentContent}
             onChangeText={setCommentContent}
-            placeholder="댓글을 입력해주세요."
+            placeholder={isLoggedIn ? '댓글을 입력해주세요.' : '로그인이 필요합니다.'}
             multiline
             style={styles.commentTextInput}
-            editable={!isCreatingComment}
+            editable={!isCreatingComment && isLoggedIn}
             placeholderTextColor={colors.GRAY_600}
+            onFocus={() => {
+              if (!isLoggedIn) {
+                Alert.alert('로그인이 필요합니다.', '댓글을 작성하려면 로그인이 필요합니다.', [
+                  {
+                    text: '취소',
+                    style: 'cancel',
+                  },
+                  {
+                    text: '로그인',
+                    onPress: () => router.push('/auth/login'),
+                  },
+                ])
+              }
+            }}
           />
           <Button
             label={isCreatingComment ? '작성 중...' : '댓글 등록'}

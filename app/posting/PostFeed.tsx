@@ -1,7 +1,6 @@
 import Button from '@/components/common/Button'
 import DescriptionText from '@/components/DescriptionText'
 import ImageUpload from '@/components/ImageUpload'
-import PreviewImages from '@/components/PreviewImages'
 import TitleText from '@/components/TitleText'
 import { supabase } from '@/libs/supabase'
 import { router } from 'expo-router'
@@ -11,7 +10,7 @@ import { Alert, StyleSheet, View } from 'react-native'
 type PostFormValues = {
   title: string
   description: string
-  imageUrl: string | null
+  imageUrls: string[]
 }
 
 export default function PostFeedScreen() {
@@ -19,13 +18,13 @@ export default function PostFeedScreen() {
     defaultValues: {
       title: '',
       description: '',
-      imageUrl: null,
+      imageUrls: [],
     },
     mode: 'onChange',
   })
 
   const onSubmit = async (values: PostFormValues) => {
-    const { title, description, imageUrl } = values
+    const { title, description, imageUrls } = values
 
     const {
       data: { user },
@@ -36,6 +35,7 @@ export default function PostFeedScreen() {
       Alert.alert('로그인이 필요합니다.')
       return
     }
+    const imageUrl = imageUrls.length > 0 ? JSON.stringify(imageUrls) : null
 
     const { error } = await supabase
       .from('post')
@@ -58,14 +58,11 @@ export default function PostFeedScreen() {
         <TitleText />
         <DescriptionText />
         <Controller
-          name="imageUrl"
+          name="imageUrls"
           control={postForm.control}
-          defaultValue={null}
+          defaultValue={[]}
           render={({ field: { value, onChange } }) => (
-            <>
-              <ImageUpload value={value} onChange={onChange} />
-              <PreviewImages url={value} />
-            </>
+            <ImageUpload value={value} onChange={onChange} />
           )}
         />
         <Button label="게시하기" onPress={postForm.handleSubmit(onSubmit)} />

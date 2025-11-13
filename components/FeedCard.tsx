@@ -1,6 +1,7 @@
 import { colors } from '@/constants/colors'
 import { useAuthQuery } from '@/hooks/useAuthQuery'
 import { useDeleteMutation } from '@/hooks/useDeleteFeedMutation'
+import { useToggleLikeMutation } from '@/hooks/useToggleLikeMutation'
 import { FeedPost } from '@/types'
 import { useActionSheet } from '@expo/react-native-action-sheet'
 import Feather from '@expo/vector-icons/Feather'
@@ -8,22 +9,38 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import Octicons from '@expo/vector-icons/Octicons'
 import { router } from 'expo-router'
 import React from 'react'
-import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Profile from './Profile'
 
 interface FeedCardProps {
   feed: FeedPost
   isDetail?: boolean
+  onLikePress?: () => void
 }
 
-export default function FeedCard({ feed, isDetail = false }: FeedCardProps) {
-  const isLiked = false
+export default function FeedCard({ feed, isDetail = false, onLikePress }: FeedCardProps) {
   const { data: session } = useAuthQuery()
   const currentLoginId = session?.user?.id
   const isMyPost = currentLoginId === feed.userId
   const { showActionSheetWithOptions } = useActionSheet()
   const { mutate: deleteFeed } = useDeleteMutation()
-  const firstImage = feed.imageUris[0]
+  const { mutate: toggleLike } = useToggleLikeMutation()
+  const images = feed.imageUris
+  const isLiked = feed.isLiked ?? false
+  const likeCount = feed.likeCount ?? 0
+
+  const handlePressLike = () => {
+    if (!session) {
+      Alert.alert('로그인이 필요합니다.', '좋아요를 누르려면 로그인이 필요합니다.')
+      return
+    }
+
+    if (onLikePress) {
+      onLikePress()
+    } else {
+      toggleLike({ postId: feed.id, isLiked })
+    }
+  }
 
   const handlePressOption = () => {
     const options = ['수정하기', '삭제하기', '취소']
@@ -89,22 +106,30 @@ export default function FeedCard({ feed, isDetail = false }: FeedCardProps) {
         />
         <Text style={styles.title}>{feed.title}</Text>
         <Text style={styles.description}>{feed.description}</Text>
-        {firstImage && firstImage.uri ? (
-          <Image source={{ uri: firstImage.uri }} style={styles.images} />
+        {images && images.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.imageContainer}
+          >
+            {images.map((image, index) => (
+              <Image key={index} source={{ uri: image.uri }} style={styles.images} />
+            ))}
+          </ScrollView>
         ) : null}
       </View>
       <View style={styles.menuContent}>
-        <Pressable style={styles.menu}>
+        <Pressable style={styles.menu} onPress={handlePressLike}>
           <Octicons
             name={isLiked ? 'heart-fill' : 'heart'}
             size={22}
             color={isLiked ? colors.RED : colors.BLACK}
           />
-          <Text style={styles.menuNumber}>2</Text>
+          <Text style={styles.menuNumber}>{likeCount}</Text>
         </Pressable>
         <Pressable style={styles.menu}>
           <MaterialCommunityIcons name="message-reply-outline" size={22} color="black" />
-          <Text style={styles.menuNumber}>2</Text>
+          <Text style={styles.menuNumber}>{feed.commentCount ?? 0}</Text>
         </Pressable>
         <Pressable style={styles.menu}>
           <Octicons name="share" size={22} color="black" />
@@ -150,9 +175,13 @@ const styles = StyleSheet.create({
   menuNumber: {
     fontSize: 14,
   },
+  imageContainer: {
+    marginTop: 8,
+  },
   images: {
-    width: 180,
-    height: 180,
+    width: 150,
+    height: 150,
     borderRadius: 12,
+    marginRight: 10,
   },
 })

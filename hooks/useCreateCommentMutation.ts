@@ -39,6 +39,7 @@ export const useCreateCommentMutation = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] })
+      queryClient.invalidateQueries({ queryKey: ['posts'] })
     },
     onError: (error: any) => {
       const message = error?.message ?? '댓글 작성에 실패했습니다. 다시 시도해주세요.'

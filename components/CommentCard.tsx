@@ -1,5 +1,6 @@
 import { colors } from '@/constants/colors'
 import type { CommentTreeNode } from '@/hooks/useCommentListQuery'
+import { formatRelativeTime } from '@/utils/dateFormat'
 import { StyleSheet, Text, View } from 'react-native'
 
 interface CommentCardProps {
@@ -11,13 +12,14 @@ export default function CommentCard({ comment, depth = 0 }: CommentCardProps) {
   const isDeleted = comment.isDeleted
   const content = isDeleted ? '삭제된 댓글입니다.' : comment.content
   const nickname = isDeleted ? '삭제된 사용자' : (comment.user.nickname ?? '익명')
+  const formattedTime = formatRelativeTime(comment.createdAt)
 
   return (
     <View style={[styles.wrapper, depth > 0 && { marginLeft: 12 * depth }]}>
       <View style={styles.container}>
         <Text style={styles.nickname}>{nickname}</Text>
         <Text style={styles.content}>{content}</Text>
-        <Text style={styles.timestamp}>{new Date(comment.createdAt).toLocaleString()}</Text>
+        <Text style={styles.timestamp}>{formattedTime}</Text>
       </View>
       {comment.replies.map((reply) => (
         <CommentCard key={reply.id} comment={reply} depth={depth + 1} />

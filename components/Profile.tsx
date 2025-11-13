@@ -1,4 +1,5 @@
 import { colors } from '@/constants/colors'
+import { formatRelativeTime } from '@/utils/dateFormat'
 import React, { ReactNode } from 'react'
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 
@@ -11,6 +12,8 @@ interface ProfileProps {
 }
 
 export default function Profile({ imageUri, nickname, createdAt, onPress, option }: ProfileProps) {
+  const formattedTime = formatRelativeTime(createdAt)
+
   return (
     <View style={styles.container}>
       <Pressable style={styles.profileContainer} onPress={onPress}>
@@ -20,7 +23,7 @@ export default function Profile({ imageUri, nickname, createdAt, onPress, option
         />
         <View>
           <Text style={styles.nickname}>{nickname}</Text>
-          <Text style={styles.createdAt}>{createdAt}</Text>
+          <Text style={styles.createdAt}>{formattedTime}</Text>
         </View>
       </Pressable>
       {option}

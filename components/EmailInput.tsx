@@ -28,6 +28,7 @@ export default function EmailInput() {
           onChangeText={onChange}
           submitBehavior="submit"
           error={error?.message}
+          autoCapitalize="none"
         />
       )}
     />
