@@ -30,7 +30,7 @@ export default function SignupScreen() {
 
   const onSubmit = async (values: SignupFormValues) => {
     const { email, nickname, password } = values
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -42,6 +42,26 @@ export default function SignupScreen() {
       Alert.alert('회원가입 실패', error.message ?? '다시 시도해주세요.')
       return
     }
+
+    if (data.user) {
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id: data.user.id,
+        nickname: nickname,
+      })
+
+      if (profileError) {
+        console.error('프로필 저장 실패:', profileError)
+        Alert.alert(
+          '프로필 저장 실패',
+          `프로필 저장 중 오류가 발생했습니다: ${profileError.message}. 로그인 후 프로필을 확인해주세요.`
+        )
+      } else {
+        console.log('프로필 저장 성공:', { id: data.user.id, nickname })
+      }
+    } else {
+      console.warn('회원가입 성공했지만 user 정보가 없습니다. 이메일 확인이 필요할 수 있습니다.')
+    }
+
     Alert.alert('회원가입에 성공했습니다.', '로그인 페이지로 이동합니다.', [
       {
         text: '확인',

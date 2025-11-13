@@ -24,7 +24,7 @@ export default function LoginScreen() {
 
   const onSubmit = async (values: LoginFormValues) => {
     const { email, password } = values
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
@@ -32,6 +32,31 @@ export default function LoginScreen() {
       Alert.alert('로그인 실패', error.message ?? '이메일 혹은 비밀번호를 확인해주세요.')
       return
     }
+
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('nickname')
+        .eq('id', data.user.id)
+        .maybeSingle()
+
+      if (!profile?.nickname) {
+        const nickname = data.user.user_metadata?.nickname
+        if (nickname) {
+          const { error: profileError } = await supabase.from('profiles').upsert({
+            id: data.user.id,
+            nickname: nickname,
+          })
+
+          if (profileError) {
+            console.error('프로필 동기화 실패:', profileError)
+          } else {
+            console.log('프로필 동기화 성공:', { id: data.user.id, nickname })
+          }
+        }
+      }
+    }
+
     Alert.alert('로그인에 성공했습니다.', '홈으로 이동합니다.', [
       {
         text: '확인',
