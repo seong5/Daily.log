@@ -94,13 +94,25 @@ export default function FeedDetailScreen() {
       console.error('Error fetching comment count:', commentCountError)
     }
 
+    // image_url이 JSON 배열인지 단일 문자열인지 확인
+    let imageUris: { uri: string }[] = []
+    if (post.image_url) {
+      try {
+        const parsed = JSON.parse(post.image_url)
+        const urls = Array.isArray(parsed) ? parsed : [post.image_url]
+        imageUris = urls.map((uri: string) => ({ uri }))
+      } catch {
+        imageUris = [{ uri: post.image_url }]
+      }
+    }
+
     const mapped: FeedPost = {
       id: String(post.id),
       title: post.title ?? '',
       description: post.description ?? '',
       userId: String(post.user_id),
       createdAt: post.created_at,
-      imageUris: post.image_url ? [{ uri: post.image_url }] : [],
+      imageUris,
       author: author ?? {
         id: String(post.user_id),
         nickname: '알 수 없음',
@@ -154,7 +166,6 @@ export default function FeedDetailScreen() {
         onSuccess: () => {
           setCommentContent('')
           refetchComments()
-          // 댓글 개수 업데이트를 위해 상세 정보 다시 가져오기
           fetchDetail()
         },
       }

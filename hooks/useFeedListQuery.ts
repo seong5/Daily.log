@@ -62,13 +62,16 @@ const mapRowsToFeedPosts = async (rows: PostRow[]): Promise<FeedPost[]> => {
           nickname: '익명',
           imageUri: '',
         },
-        imageUris: row.image_url
-          ? [
-              {
-                uri: row.image_url,
-              },
-            ]
-          : [],
+        imageUris: (() => {
+          if (!row.image_url) return []
+          try {
+            const parsed = JSON.parse(row.image_url)
+            const urls = Array.isArray(parsed) ? parsed : [row.image_url]
+            return urls.map((uri: string) => ({ uri }))
+          } catch {
+            return [{ uri: row.image_url }]
+          }
+        })(),
         commentCount: count ?? 0,
       }
     })
