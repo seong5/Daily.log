@@ -99,14 +99,14 @@ export default function FeedDetailScreen() {
     if (post?.user_id) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('id, nickname, imageUri')
+        .select('id, nickname, imageuri')
         .eq('id', post.user_id)
         .maybeSingle()
       if (profile) {
         author = {
           id: profile.id,
-          nickname: profile.nickname ?? '',
-          imageUri: profile.imageUri ?? undefined,
+          nickname: profile.nickname ?? '익명',
+          imageUri: (profile as any).imageuri ?? (profile as any).image_uri ?? undefined,
         }
       }
     }
@@ -162,7 +162,7 @@ export default function FeedDetailScreen() {
       imageUris,
       author: author ?? {
         id: String(post.user_id),
-        nickname: '알 수 없음',
+        nickname: '익명',
         imageUri: undefined,
       },
       commentCount: commentCount ?? 0,

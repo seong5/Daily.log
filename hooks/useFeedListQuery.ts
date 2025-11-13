@@ -25,9 +25,31 @@ const mapRowsToFeedPosts = async (rows: PostRow[]): Promise<FeedPost[]> => {
   } = await supabase.auth.getUser()
   const currentUserId = user?.id
 
+  const userIds = [...new Set(rows.map((row) => row.user_id).filter(Boolean))]
+
+  const profilesMap = new Map<string, { nickname: string | null; imageUri: string | null }>()
+  if (userIds.length > 0) {
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, nickname, imageuri')
+      .in('id', userIds)
+
+    if (profilesError) {
+      console.warn('profiles select error:', profilesError)
+    }
+
+    if (profiles) {
+      profiles.forEach((profile: any) => {
+        profilesMap.set(profile.id, {
+          nickname: profile.nickname,
+          imageUri: profile.imageuri ?? profile.image_uri ?? null,
+        })
+      })
+    }
+  }
+
   const postsWithCounts = await Promise.all(
     rows.map(async (row) => {
-      // 댓글 개수 가져오기
       const { count: commentCount, error: commentError } = await supabase
         .from('comments')
         .select('*', { count: 'exact', head: true })
@@ -38,7 +60,6 @@ const mapRowsToFeedPosts = async (rows: PostRow[]): Promise<FeedPost[]> => {
         console.error('Error fetching comment count:', commentError)
       }
 
-      // 좋아요 개수 가져오기
       const { count: likeCount, error: likeError } = await supabase
         .from('likes')
         .select('*', { count: 'exact', head: true })
@@ -61,6 +82,21 @@ const mapRowsToFeedPosts = async (rows: PostRow[]): Promise<FeedPost[]> => {
         isLiked = !!likeData
       }
 
+      const profile = profilesMap.get(row.user_id)
+      let authorNickname = '익명'
+      let authorImageUri = ''
+
+      if (profile) {
+        if (profile.nickname) {
+          authorNickname = profile.nickname
+        } else {
+          console.warn('프로필 닉네임이 비어있습니다.', profile)
+        }
+        authorImageUri = profile.imageUri ?? ''
+      } else {
+        console.warn('프로필 정보를 찾을 수 없습니다.', row.user_id)
+      }
+
       return {
         id: row.id,
         userId: row.user_id,
@@ -69,8 +105,8 @@ const mapRowsToFeedPosts = async (rows: PostRow[]): Promise<FeedPost[]> => {
         createdAt: row.created_at,
         author: {
           id: row.user_id,
-          nickname: '익명',
-          imageUri: '',
+          nickname: authorNickname,
+          imageUri: authorImageUri,
         },
         imageUris: (() => {
           if (!row.image_url) return []
