@@ -1,6 +1,7 @@
 import CommentCard from '@/components/CommentCard'
 import Button from '@/components/common/Button'
 import FeedCard from '@/components/FeedCard'
+import FeedCardSkeleton from '@/components/FeedCardSkeleton'
 import { colors } from '@/constants/colors'
 import { useAuthQuery } from '@/hooks/useAuthQuery'
 import { useCommentListQuery } from '@/hooks/useCommentListQuery'
@@ -222,9 +223,11 @@ export default function FeedDetailScreen() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator />
-      </View>
+      <ScrollView
+        contentContainerStyle={{ padding: 12, backgroundColor: colors.GRAY_100 }}
+      >
+        <FeedCardSkeleton />
+      </ScrollView>
     )
   }
 
