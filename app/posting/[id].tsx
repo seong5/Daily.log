@@ -223,9 +223,7 @@ export default function FeedDetailScreen() {
 
   if (loading) {
     return (
-      <ScrollView
-        contentContainerStyle={{ padding: 12, backgroundColor: colors.GRAY_100 }}
-      >
+      <ScrollView contentContainerStyle={{ padding: 12, backgroundColor: colors.GRAY_100 }}>
         <FeedCardSkeleton />
       </ScrollView>
     )
