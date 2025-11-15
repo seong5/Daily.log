@@ -1,50 +1,67 @@
-# Welcome to your Expo app 👋
+## 📱 Community App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+간단한 커뮤니티 기능을 제공하는 모바일 앱입니다.
 
-## Get started
+Expo · React Native 기반으로 개발되었으며, Supabase를 통해 인증과 데이터 관리를 처리합니다.
 
-1. Install dependencies
 
-   ```bash
-   npm install
-   ```
+IOS 운영체제에 초점을 두고 구현했습니다.
 
-2. Start the app
 
-   ```bash
-   npx expo start
-   ```
+사용자들은 **회원가입/로그인, 피드 작성, 이미지 업로드, 댓글 작성** 등 기본적인 커뮤니티 기능을 이용할 수 있습니다.
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🚀 Features
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 👤 Auth
+- 이메일 기반 회원가입 / 로그인
+- AsyncStorage 를 통한 세션 유지
+- Supabase Auth 연동
 
-## Get a fresh project
+### 📝 Feed
+- 게시글 목록 조회
+- 게시글 상세 보기
+- 텍스트 + 이미지 업로드
+- 게시물 수정 및 삭제
 
-When you're ready, run:
+### 💬 Comment
+- 댓글 작성
 
-```bash
-npm run reset-project
-```
+### 📸 Image Handling
+- 이미지 다중 업로드
+- Base64 변환 후 Supabase Storage 업로드
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 🎨 UI/UX
+- 커뮤니티 UI
+- Expo Image, 활용
 
-## Learn more
+## 🐈‍⬛  페이지 경로
 
-To learn more about developing your project with Expo, look at the following resources:
+| 페이지           | 경로                   |
+| ---------------- | ---------------------- |
+| 로그인           | /auth/login                 |
+| 회원가입         | /auth/signup                |
+| 메인 화면        | /                      |
+| 게시물 작성        | /posting/PostFeed         |
+| 게시물 수정 | /posting/EditFeed                |
+| 게시물 상세화면       | /posting/[id]           |
+| 프로필 화면       | /myProfile           |
+| 설정 화면       | /setting        |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
-## Join the community
+## 🛠 Tech Stack
 
-Join our community of developers creating universal apps.
+| Category | Stack |
+|---------|-------|
+| **Framework** | Expo 54, React Native 0.81, React 19, Expo Router 6 |
+| **Language** | TypeScript |
+| **Navigation** | React Navigation (Native, Bottom Tabs) |
+| **State / Data** | TanStack React Query v5, React Hook Form |
+| **Backend / Auth** | Supabase (Auth, Storage, DB), AsyncStorage |
+| **UI / UX** | @expo/vector-icons, react-native-safe-area-context |
+| **Media / File** | Expo Image Picker , Expo File System |
+| **Utilities** | expo-constants , react-native-url-polyfill |
+| **Dev Tools** | ESLint , eslint-config-expo |
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
