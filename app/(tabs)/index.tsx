@@ -34,7 +34,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <MainLogo width={80} height={65} />
+          <MainLogo width={80} height={55} />
         </View>
         <View style={styles.buttonContainer}>
           {!isLoggedIn ? (
