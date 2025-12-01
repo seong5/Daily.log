@@ -1,5 +1,6 @@
 import Button from '@/components/common/Button'
 import FeedList from '@/components/FeedList'
+import MainLogo from '@/components/MainLogo'
 import { useAuthQuery } from '@/hooks/useAuthQuery'
 import { useLogout } from '@/hooks/useLogout'
 import { router } from 'expo-router'
@@ -31,13 +32,18 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {!isLoggedIn ? (
-          <Button label="로그인/회원가입" size="md" onPress={() => router.push('/auth')} />
-        ) : null}
-        {isLoggedIn ? (
-          <Button label="로그아웃" size="md" onPress={confirmLogout} disabled={isPending} />
-        ) : null}
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <MainLogo width={80} height={55} />
+        </View>
+        <View style={styles.buttonContainer}>
+          {!isLoggedIn ? (
+            <Button label="로그인/회원가입" size="md" onPress={() => router.push('/auth')} />
+          ) : null}
+          {isLoggedIn ? (
+            <Button label="로그아웃" size="md" onPress={confirmLogout} disabled={isPending} />
+          ) : null}
+        </View>
       </View>
       <FeedList />
       <View style={[styles.fixedButtonContainer, { bottom: 10 }]}>
@@ -51,9 +57,19 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  container: {
-    flexDirection: 'row-reverse',
-    marginRight: 16,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
   },
   fixedButtonContainer: {
     position: 'absolute',

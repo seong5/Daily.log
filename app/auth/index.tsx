@@ -1,6 +1,7 @@
 import Button from '@/components/common/Button'
+import MainLogo from '@/components/MainLogo'
 import { Link, router } from 'expo-router'
-import { Image, ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function AuthScreen() {
@@ -8,11 +9,7 @@ export default function AuthScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.logoContainer}>
-          <Image
-            source={require('../../assets/images/main-logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <MainLogo width={300} height={350} />
         </View>
         <View style={styles.buttonContainer}>
           <Button label="이메일로 로그인하기" onPress={() => router.push('/auth/login')} />
@@ -39,8 +36,8 @@ const styles = StyleSheet.create({
     marginBottom: 100,
   },
   logo: {
-    width: 500,
-    height: 350,
+    width: 400,
+    height: 300,
   },
   buttonContainer: {
     paddingHorizontal: 20,
